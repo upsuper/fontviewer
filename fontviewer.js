@@ -69,7 +69,7 @@ var FontViewer = {
       var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 
-      var line = glyph.getAttribute('d'), glyphName, horizAdvance = parseFloat(glyph.getAttribute('horiz-adv-x')), bbox, max;
+      var line = glyph.getAttribute('d'), glyphName, glyphUnicode, horizAdvance = parseFloat(glyph.getAttribute('horiz-adv-x')), bbox, max;
       if(!line) return;
       
       bbox = FontViewer.getPathBoundingBox(line);
@@ -86,10 +86,16 @@ var FontViewer = {
       svg.setAttribute('height', FontViewer.settings.glyphSize.height+'px');
       svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
-      glyphName = String(glyph.getAttribute('glyph-name'));
-      FontViewer.glyphs[glyphName] = {name: glyphName, path: line, hoz: horizAdvance};
+      glyphName = glyph.getAttribute('glyph-name');
+      glyphUnicode = glyph.getAttribute('unicode').charCodeAt(0).toString(16);
+      FontViewer.glyphs[glyphUnicode] = {name: glyphName, path: line, hoz: horizAdvance};
 
-      container.className = 'fontViewer_'+glyphName;
+      container.id = 'fontViewer_' + glyphUnicode;
+      if(!glyphName) {
+        glyphName = '(x' + glyphUnicode.toUpperCase() + ')';
+      } else {
+        glyphName = String(glyphName);
+      }
       if(glyphName.length > 12) {
         glyphName = glyphName.substring(0, 9) + '...';
       }
@@ -98,16 +104,16 @@ var FontViewer = {
       container.appendChild(svg);
 
       container.addEventListener('click', function() {
-        FontViewer.modalGlyph(this.className.split('fontViewer_')[1]);
+        FontViewer.modalGlyph(this.id.split('fontViewer_')[1]);
       }, false);
 
       $('glyphs').appendChild(container);
 
     },
 
-    modalGlyph: function(glyphName) {
-      console && console.log("Modal show: ", glyphName);
-      var glyph = FontViewer.glyphs[glyphName];
+    modalGlyph: function(glyphUnicode) {
+      console && console.log("Modal show: ", glyphUnicode);
+      var glyph = FontViewer.glyphs[glyphUnicode];
       if(!glyph) {
         return false;
       }
